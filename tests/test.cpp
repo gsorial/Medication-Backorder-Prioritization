@@ -1,8 +1,7 @@
-// If you change anything in this file, your changes will be ignored 
-// in your homework submission.
-// Chekout TEST_F functions bellow to learn what is being tested.
+
+
 #include <gtest/gtest.h>
-// #include "../code_1/<HEADER FILE>.hpp"
+#include "../code/xor.cpp"
 
 #include <fstream>
 #include <iostream>
@@ -13,79 +12,111 @@
 
 using namespace std;
 
-class test_x : public ::testing::Test {
-protected:
-	// This function runs only once before any TEST_F function
-	static void SetUpTestCase(){
-		std::ofstream outgrade("./total_grade.txt");
-		if(outgrade.is_open()){
-			outgrade.clear();
-			outgrade << (int)0;
-			outgrade.close();
-		}
-	}
+class test_xor : public ::testing::Test {
 
-	// This function runs after all TEST_F functions have been executed
-	static void TearDownTestCase(){
-		std::ofstream outgrade("./total_grade.txt");
-		if(outgrade.is_open()){
-			outgrade.clear();
-			outgrade << (int)std::ceil(100*total_grade/max_grade);
-			outgrade.close();
-			std::cout << "Total Grade is : " << (int)std::ceil(100*total_grade/max_grade) << std::endl;
-		}
-	}
-
-	void add_points_to_grade(double points){
-		if(!::testing::Test::HasFailure()){
-			total_grade += points;
-		}
-	}
-
-	// this function runs before every TEST_F function
-	void SetUp() override {}
-
-	// this function runs after every TEST_F function
-	void TearDown() override {
-		std::ofstream outgrade("./total_grade.txt");
-		if(outgrade.is_open()){
-			outgrade.clear();
-			outgrade << (int)std::ceil(100*total_grade/max_grade);
-			outgrade.close();
-		}
-	}
-	
-	static double total_grade;
-	static double max_grade;
 };
-
-double test_x::total_grade = 0;
-double test_x::max_grade = 100;
+	
 
 /////////////////////////////////////////
 // Test Helper Functions
 /////////////////////////////////////////
 
 
-
-std::string exec(const char* cmd) {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-    return result;
-}
-
 /////////////////////////////////////////
 // Tests start here
 /////////////////////////////////////////
 
-TEST_F(test_x, TestFunction){
 
+TEST_F(test_xor, TestInitialization){ 
+	Xor testList;
+	ASSERT_EQ(NULL,testList.GetTop());
+	node* root = testList.InitNode(1,25);
+	ASSERT_TRUE(root);
+	ASSERT_EQ(25, root->dose);
+	ASSERT_FALSE(root->link);
 }
 
+
+TEST_F(test_xor, TestInsert){
+	Xor testList;  //tried to make this into a helper function but using 'testList' caused problems...
+	node* a=testList.InitNode(1,20);
+	node* b=testList.InitNode(2,20);
+	node* c=testList.InitNode(3,20);
+	testList.Insert(a);
+	testList.Insert(b);
+	testList.Insert(c);
+
+	node* top = a;
+	testList.SetTop(top);
+	node* curr=testList.GetTop();
+	ASSERT_EQ(1, curr->MRN);
+	node* prev=nullptr;
+	curr=testList.XOR(prev,curr->link);
+	prev=testList.GetTop();
+	ASSERT_EQ(2, curr->MRN);
+	curr=testList.XOR(prev,curr->link);
+	ASSERT_EQ(3, curr->MRN);
+}
+
+TEST_F(test_xor, TestRemove){
+	Xor testList;
+	node* a=testList.InitNode(1,20);
+	node* b=testList.InitNode(2,20);
+	node* c=testList.InitNode(3,20);
+	testList.Insert(a);
+	testList.Insert(b);
+	testList.Insert(c);
+	
+	node* top = a;			//will remove and check which node is at the top of the list
+	testList.SetTop(top);
+	node* curr=testList.GetTop();
+	testList.Remove();
+	curr=testList.GetTop();
+	ASSERT_EQ(2, curr->MRN);
+	testList.Remove();
+	curr=testList.GetTop();
+	ASSERT_EQ(3, curr->MRN);
+	testList.Remove();
+	curr=testList.GetTop();
+	ASSERT_EQ(NULL, curr);
+}
+
+TEST_F(test_xor, TestDispense){
+	Xor testList;
+	node* a=testList.InitNode(1,20);
+	node* b=testList.InitNode(2,20);
+	node* c=testList.InitNode(3,20);
+	testList.Insert(a);
+	testList.Insert(b);
+	testList.Insert(c);
+
+	node* top = a;
+	testList.SetTop(top);
+	node* curr=testList.GetTop();
+	testList.dispense(45); //only patient 3 should be remaining in the list
+	curr=testList.GetTop();
+	ASSERT_EQ(3,curr->MRN);
+	testList.dispense(20); //dispense the final patient's medication
+	ASSERT_EQ(NULL,testList.GetTop());
+}
+
+TEST_F(test_xor, TestSize){
+	Xor testList;
+	node* a=testList.InitNode(1,20);
+	node* b=testList.InitNode(2,20);
+	node* c=testList.InitNode(3,20);
+	testList.Insert(a);
+	testList.Insert(b);
+	testList.Insert(c);
+		
+						
+	ASSERT_EQ(3, testList.size()); 
+	testList.Remove();
+	ASSERT_EQ(2, testList.size()); 
+	testList.Remove();
+	ASSERT_EQ(1, testList.size()); 
+	testList.Remove();
+	ASSERT_EQ(0, testList.size()); 
+	
+	
+}//size should be 3-2-1-0
