@@ -27,10 +27,10 @@ node* Xor::InitNode(int MRN, int dose){
 }
 
 void Xor::Insert(node* new_node){
-  curr=top_ptr_;
   if (top_ptr_){
+    curr=top_ptr_;
     next=XOR(prev,curr->link);
-    while(next!=nullptr){  //if there's more than 1 node in the list, go to the end
+    while(next){  //if there's more than 1 node in the list, go to the end
       prev=curr;
       curr=next;
       next=XOR(prev,curr->link);
@@ -45,17 +45,20 @@ void Xor::Insert(node* new_node){
 }
 
 
-void Xor::Remove(){
+void Xor::Remove(){     //removes the first node in the list
   if(top_ptr_){
-    if(top_ptr_->link==nullptr){
+    if(top_ptr_->link==nullptr){    //if only head, set to null ptr, deleting node...would this be a memory leak otherwise? Deleting top_ptr_ directly gives error
+      node* temp=top_ptr_;
+      delete temp;
       top_ptr_=nullptr;
     }
     else{
-      node* new_head =nullptr;
-      new_head=XOR(nullptr,top_ptr_->link);
-      next=XOR(top_ptr_,new_head->link);
-      new_head->link=XOR(nullptr,next);
-      top_ptr_=new_head;
+      node* new_head =nullptr;       
+      new_head=XOR(nullptr,top_ptr_->link); //new head=next
+      next=XOR(top_ptr_,new_head->link);    //the following node is assigned to next
+      new_head->link=XOR(nullptr,next);     //new head's link needs to be updated
+      delete top_ptr_;
+      top_ptr_=new_head;                 
     }
   }
   else{cout<<"There are no patients remaining in this list\n";}
@@ -67,7 +70,7 @@ void Xor::printNode(node* node){
   cout<<"Dose: "<<node->dose<<" Grams\n";
 }
 
-void Xor::dispense(int gramsReceived){
+void Xor::dispense(int gramsReceived){ //wow recursion
   int gramsRemaining=gramsReceived;
   if(top_ptr_){
     curr=top_ptr_;
