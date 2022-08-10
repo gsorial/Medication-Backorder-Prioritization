@@ -40,7 +40,6 @@ void Xor::Insert(node* new_node){
   }
   else{
     top_ptr_=new_node;
-    new_node->link=nullptr;
   }
 }
 
